@@ -43,7 +43,7 @@ with tf.Session() as sess:
 
 
 
-img = tf.read_file('mnist/mnist_train_s/700006.jpg')
+img = tf.read_file('images/6.jpg')
 im_3 = tf.image.decode_jpeg(img, channels=3)
 im_resize = tf.image.resize_images(im_3, [28, 28])
 im_gry = tf.squeeze(tf.image.rgb_to_grayscale(im_resize), 2)
