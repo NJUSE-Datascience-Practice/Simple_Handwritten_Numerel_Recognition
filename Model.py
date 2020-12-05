@@ -2,10 +2,10 @@ import tensorflow.compat.v1 as tf
 tf.disable_eager_execution()
 tf.disable_v2_behavior()
 import tensorflow.examples.tutorials.mnist.input_data as input_data
+import os
 
 # 1 读取训练数据
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
-
 
 # 2 建立模型
 x = tf.placeholder(tf.float32, [None, 784])
@@ -41,17 +41,26 @@ with tf.Session() as sess:
     model_name = "model_" + (str(accuracy))[:4] + "%"
     tf.train.Saver().save(sess, model_path + model_name)
 
+def pred(image):
+    img = tf.read_file(image)
+    im_3 = tf.image.decode_jpeg(img, channels=3)
+    im_resize = tf.image.resize_images(im_3, [28, 28])
+    im_gry = tf.squeeze(tf.image.rgb_to_grayscale(im_resize), 2)
+    im_reshape = tf.reshape(im_gry, [1, 784])
 
+    with tf.Session() as sess:
+        tf.train.Saver().restore(sess, "model/model_91.0%")
+        xx = sess.run(im_reshape)
+        result = sess.run(tf.argmax(y, 1), feed_dict={x: xx})
+        for num in result:
+            return num
 
-img = tf.read_file('images/6.jpg')
-im_3 = tf.image.decode_jpeg(img, channels=3)
-im_resize = tf.image.resize_images(im_3, [28, 28])
-im_gry = tf.squeeze(tf.image.rgb_to_grayscale(im_resize), 2)
-im_reshape = tf.reshape(im_gry, [1, 784])
-
-with tf.Session() as sess:
-    tf.train.Saver().restore(sess, "model/model_90.8%")
-
-    xx = sess.run(im_reshape)
-    result = sess.run(tf.argmax(y, 1), feed_dict={x: xx})
-    print(result)
+f = open('mnist_test_s.txt','w')
+file = "mnist/mnist_test_s"
+img_list = os.listdir("mnist/mnist_test_s")
+for root, dirs, files in os.walk(file):
+    for name in files:
+        res = pred(os.path.join(root, name))
+        print(os.path.join(name)+' '+str(res))
+        f.write(os.path.join(name)+' '+str(res)+'\n')
+f.close()
